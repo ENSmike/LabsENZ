@@ -1,8 +1,8 @@
+#!/usr/bin/env python3
 import requests
 import json
 import logging
 import time
-import threading
 
 logging.basicConfig(
     filename="server.log",
@@ -12,24 +12,25 @@ logging.basicConfig(
     style='{'
 )
 log = logging.getLogger(__name__)
-def run():
-    main("http://localhost:8000/health")
+
 def main(url):
     try:
         r = requests.get(url)
-        r.raise_for_status()
+    except Exception as err:
+        logging.error("Виникла помилка: : %s", err)
+        print("Виникла помилка: ", err)
+    else:
+        print("Сервер працює!", flush=True)
         data = json.loads(r.content)
-        logging.info("Server available, server date: %s", data['date'])
-        logging.info("Monitoring page: : %s", data['current_page'])
-        logging.info("Server info: %s", data['server_info'])
-        logging.info("Client info: %s", data['client_info'])
-    except Exception as e:
-        logging.error("Exception: %s", e)
-'''
-    while 1 == 1:
-        time.sleep(60)
-        run()
-'''
+        logging.info("Сервер доступний. Час на сервері: %s", data['date'])
+        logging.info("Запитувана сторінка: : %s", data['current_page'])
+        logging.info("Відповідь сервера місти наступні поля:")
+        for key in data.keys():
+            logging.info("Ключ: %s, Значення: %s", key, data[key])
 
 if __name__ == '__main__':
-    run()
+    times=0
+    while times<3:
+        main("http://localhost:8000/health")
+        time.sleep(4)
+        times=times+1
